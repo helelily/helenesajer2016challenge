@@ -1,16 +1,15 @@
 import json
-import networkx
-import matplotlib.pyplot as plot_tool
 import datetime
 import statistics
+import networkx
+import matplotlib.pyplot as plot_tool
 
-
-decoder = json.JSONDecoder()
+DECODER = json.JSONDecoder()
 
 
 def parse_transaction_line(json_line):
     try:
-        transaction_line = decoder.decode(json_line)
+        transaction_line = DECODER.decode(json_line)
     except ValueError:
         return None
 
@@ -39,20 +38,21 @@ def update_rolling_window(transaction, max_time_processed):
 
 
 def update_transaction_set(transaction_set, transaction, max_time_processed):
-    min_time = max_time_processed + datetime.timedelta(seconds= -60)
+    min_time = max_time_processed + datetime.timedelta(seconds=-60)
     transaction_set.append(transaction)
     transaction_set = [(time, (t, a)) for (time, (t, a)) in transaction_set if min_time < time <= max_time_processed]
     return transaction_set
 
 
-def plot_network_return_median(transaction_set):
-    pairsInWindow = [(t, a) for (time, (t, a)) in transaction_set]
-    transactionGraph = networkx.Graph(pairsInWindow)
-    networkx.draw_circular(transactionGraph)
+def plot_network_return_median(transaction_set, pause_time=0):
+    pairs_in_window = [(t, a) for (time, (t, a)) in transaction_set]
+    transaction_graph = networkx.Graph(pairs_in_window)
+    networkx.draw_circular(transaction_graph)
     plot_tool.show()
-    plot_tool.pause(0.0001)
+    if pause_time > 0:
+        plot_tool.pause(pause_time)
     plot_tool.close()
 
-    degrees = [degree[1] for degree in transactionGraph.degree()]
+    degrees = [degree[1] for degree in transaction_graph.degree()]
     median = "%.2f\n" % statistics.median(degrees)
     return median
